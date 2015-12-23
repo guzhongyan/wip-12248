@@ -570,6 +570,24 @@ target_link_libraries(ceph-mon mon boost_thread common os global ${EXTRALIBS}
   ${CMAKE_DL_LIBS} ${TCMALLOC_LIBS})
 install(TARGETS ceph-mon DESTINATION bin)
 
+#external project rocksdb
+if(${WITH_ROCKSDB})
+include(ExternalProject)
+ExternalProject_Add(rocksdb
+  SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/rocksdb
+  CONFIGURE_COMMAND true
+  BINARY_DIR ${CMAKE_SOURCE_DIR}/src/rocksdb 
+  BUILD_COMMAND EXTRA_CXXFLAGS=-fPIC PORTABLE=1 make VERBOSE=1 static_lib
+  INSTALL_COMMAND true
+)
+
+#For now only building rocksdb statically
+add_library(librocksdb STATIC IMPORTED)
+set_property(TARGET librocksdb PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/src/rocksdb/librocksdb.a) 
+set_property(TARGET librocksdb PROPERTY INTERFACE_LINK_LIBRARIES z bz2 snappy)
+add_dependencies(librocksdb rocksdb)
+endif(${WITH_ROCKSDB})
+
 # OSD
 if(${HAVE_XFS})
   set(libos_xfs_srcs
@@ -602,6 +620,8 @@ set(libos_srcs
   os/fs/FS.cc
   ${libkv_srcs}
   ${libos_xfs_srcs})
+
+add_subdirectory(kv)
 
 set(os_mon_files
   kv/LevelDBStore.cc)
