@@ -8,6 +8,7 @@
  * License version 2.1, as published by the Free Software
  * Foundation.  See file COPYING.
  * Copyright 2013 Inktank
+ *
  */
 
 #include "TrackedOp.h"
